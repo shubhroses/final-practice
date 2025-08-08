@@ -15,8 +15,8 @@ spec:
         app: flask-demo
     spec:
       containers:
-      - name: flask-demo
-        image: docker.io/shubhroses/flask-demo:latest
+      - name: flask
+        image: flask-demo
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5000

@@ -3,6 +3,7 @@ set -euo pipefail
 
 PROJECT_DIR="/home/vagrant/final-practice"
 DIR_PATH="https://github.com/shubhroses/final-practice.git"
+IMAGE_TAG="${IMAGE_TAG:-$(date +%Y%m%d%H%M%S)}"
 
 echo ""
 echo "1. Ensure Vagrant is up and running"
@@ -21,8 +22,8 @@ vagrant ssh -c "
 echo ""
 echo "3. Build docker image and push to docker hub"
 # vagrant ssh -c "cd ${PROJECT_DIR} &&  docker build -t flask-demo ."
-vagrant ssh -c "cd ${PROJECT_DIR} &&  docker build -t flask-demo:latest . && docker tag flask-demo:latest docker.io/shubhroses/flask-demo:latest"
-vagrant ssh -c "cd ${PROJECT_DIR} && docker push docker.io/shubhroses/flask-demo:latest"
+vagrant ssh -c "cd ${PROJECT_DIR} &&  docker build -t flask-demo:${IMAGE_TAG} . && docker tag flask-demo:${IMAGE_TAG} docker.io/shubhroses/flask-demo:${IMAGE_TAG}"
+vagrant ssh -c "cd ${PROJECT_DIR} && docker push docker.io/shubhroses/flask-demo:${IMAGE_TAG}"
 
 echo ""
 echo "4. Import docker image to k3s"
@@ -32,6 +33,10 @@ echo "4. Import docker image to k3s"
 echo ""
 echo "5. Apply k8s-deploy.yaml file"
 vagrant ssh -c "cd ${PROJECT_DIR} &&  sudo k3s kubectl apply -f k8s-deploy.yaml"
+
+echo ""
+echo "5. Update image"
+vagrant ssh -c "sudo k3s kubectl set image deployment/flask-demo image=docker.io/shubhroses/flask:demo:${IMAGE_TAG} --record"
 
 echo ""
 echo "6. Restart pods"
