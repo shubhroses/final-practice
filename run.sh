@@ -19,9 +19,29 @@ vagrant ssh -c "
 "
 
 echo ""
-echo "3. Build docker image"
-vagrant ssh -c "cd ${PROJECT_DIR} &&  docker build -t flask-demo ."
+echo "3. Build docker image and push to docker hub"
+# vagrant ssh -c "cd ${PROJECT_DIR} &&  docker build -t flask-demo ."
+vagrant ssh -c "cd ${PROJECT_DIR} &&  docker build -t flask-demo:latest . && docker tag flask-demo:latest docker.io/shubhroses/flask-demo:latest"
+vagrant ssh -c "cd ${PROJECT_DIR} && docker push docker.io/shubhroses/flask-demo:latest"
 
 echo ""
 echo "4. Import docker image to k3s"
-vagrant ssh -c "docker save flask-demo | sudo k3s ctr images import -"
+# vagrant ssh -c "docker save flask-demo | sudo k3s ctr images import -"
+
+
+echo ""
+echo "5. Apply k8s-deploy.yaml file"
+vagrant ssh -c "cd ${PROJECT_DIR} &&  sudo k3s kubectl apply -f k8s-deploy.yaml"
+
+echo ""
+echo "6. Restart pods"
+vagrant ssh -c "cd ${PROJECT_DIR} &&  sudo k3s kubectl rollout restart deployment/flask-demo"
+
+echo ""
+echo "7. Wait for restart to complete"
+vagrant ssh -c "cd ${PROJECT_DIR} &&  sudo k3s kubectl rollout status deployment/flask-demo --timeout 60s"
+
+
+echo ""
+echo "8. Test application"
+vagrant ssh -c "curl http://localhost:30007"
