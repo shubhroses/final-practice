@@ -17,3 +17,11 @@ vagrant ssh -c "
         git clone ${DIR_PATH} ${PROJECT_DIR}
     fi
 "
+
+echo ""
+echo "3. Build docker image"
+vagrant ssh -c "cd ${PROJECT_DIR} &&  docker build -t flask-demo ."
+
+echo ""
+echo "4. Import docker image to k3s"
+vagrant ssh -c "docker save flask-demo | sudo k3s ctr images import -"
